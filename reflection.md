@@ -5,7 +5,22 @@
 **a. Initial design**
 
 - Briefly describe your initial UML design.
+    <3 core actions a user can do>:
+        1. Add a pet (type, species, name..)
+        2. schedule a task (e.g. walking, feeding, )
+        3. see today's task (e.g. notification, checklist)
+
 - What classes did you include, and what responsibilities did you assign to each?
+Four required classes: Owner, Pet, Task, Scheduler
+Brainstorm: probably some type of a customized object for pet, 
+        with attributes of type, species, name, 
+        and a vector or some type of list for holding and accessing daily tasks
+     - methods for viewing these attributes
+     - methods for changing these attributes, with some type of access control for users
+     - methods for displaying the daily task
+     - methods for adding, removing or modifying task into the list of daily task
+     
+
 
 **b. Design changes**
 
