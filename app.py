@@ -103,6 +103,23 @@ if pets:
 
     all_tasks = st.session_state.owner.get_all_tasks()
     if all_tasks:
+        display_scheduler = Scheduler(available_time_minutes=0)
+
+        conflicts = display_scheduler.detect_time_conflicts(st.session_state.owner)
+        if conflicts:
+            for warning in conflicts:
+                st.warning(warning, icon="⚠️")
+        else:
+            st.success("No scheduling conflicts detected.", icon="✅")
+
+        sort_choice = st.radio("Sort tasks by", ["Priority", "Time"], horizontal=True)
+        if sort_choice == "Priority":
+            sorted_tasks = display_scheduler.sort_by_priority(all_tasks)
+        else:
+            sorted_tasks = display_scheduler.sort_by_time(all_tasks)
+
+        priority_labels = {"high": "🔴 High", "medium": "🟡 Medium", "low": "🟢 Low"}
+
         st.write("Current tasks:")
         st.table(
             [
@@ -110,11 +127,11 @@ if pets:
                     "pet": pets_by_id[task.pet_id].name if task.pet_id in pets_by_id else "?",
                     "title": task.title,
                     "category": task.category,
-                    "duration_minutes": task.duration_minutes,
-                    "priority": task.priority,
-                    "preferred_time": task.preferred_time,
+                    "duration (min)": task.duration_minutes,
+                    "priority": priority_labels.get(task.priority, task.priority),
+                    "preferred time": task.preferred_time.strftime("%H:%M") if task.preferred_time else "anytime",
                 }
-                for task in all_tasks
+                for task in sorted_tasks
             ]
         )
     else:
@@ -129,5 +146,27 @@ available_time = st.number_input("Available time today (minutes)", min_value=1, 
 
 if st.button("Generate schedule"):
     scheduler = Scheduler(available_time_minutes=int(available_time))
+
+    conflicts = scheduler.detect_time_conflicts(st.session_state.owner)
+    if conflicts:
+        for warning in conflicts:
+            st.warning(warning, icon="⚠️")
+    else:
+        st.success("No scheduling conflicts detected.", icon="✅")
+
     plan = scheduler.generate_daily_plan(st.session_state.owner)
-    st.text(scheduler.explain_plan(plan))
+    if plan:
+        st.success(f"Built today's plan — {len(plan)} task(s) fit in {int(available_time)} minutes.", icon="🐾")
+        st.table(
+            [
+                {
+                    "time": task.preferred_time.strftime("%H:%M") if task.preferred_time else "anytime",
+                    "task": task.title,
+                    "duration (min)": task.duration_minutes,
+                    "priority": task.priority,
+                }
+                for task in plan
+            ]
+        )
+    else:
+        st.info("No tasks fit into today's plan.")

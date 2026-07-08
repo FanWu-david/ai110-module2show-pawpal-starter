@@ -1,6 +1,5 @@
 classDiagram
-    %% Draft UML for PawPal+ based on brainstormed attributes/methods (reflection.md)
-    %% Keep this file updated so it matches your final implementation.
+    %% UML for PawPal+, updated to match the final implementation (pawpal_system.py).
 
     class Owner {
         -owner_id: str
@@ -15,6 +14,7 @@ classDiagram
         +remove_pet(pet_id: str) void
         +get_pets() list~Pet~
         +get_all_tasks() list~Task~
+        +filter_tasks(completed: bool, pet_name: str, for_date: date) list~Task~
     }
 
     class Pet {
@@ -28,6 +28,7 @@ classDiagram
         +add_task(task: Task) void
         +remove_task(task_id: str) void
         +modify_task(task_id: str, updates: dict) void
+        +mark_task_complete(task_id: str, for_date: date) Task
         +get_daily_tasks() list~Task~
         +display_daily_tasks() void
     }
@@ -43,10 +44,14 @@ classDiagram
         -is_recurring: bool
         -recurrence_pattern: str
         -completed_dates: set~date~
+        -due_date: date
+        -superseded: bool
         +get_details() dict
         +update_details(updates: dict) void
         +mark_complete(for_date: date) void
         +is_complete(for_date: date) bool
+        +is_due(for_date: date) bool
+        +build_next_occurrence(completed_on: date) Task
         +is_overdue() bool
     }
 
@@ -56,13 +61,16 @@ classDiagram
         +resolve_constraints(owner: Owner) dict
         +generate_daily_plan(owner: Owner, for_date: date) list~Task~
         +sort_by_priority(tasks: list~Task~) list~Task~
+        +sort_by_time(tasks: list~Task~) list~Task~
         +filter_by_time(tasks: list~Task~, available_time: int) list~Task~
         +resolve_conflicts(tasks: list~Task~) list~Task~
+        +detect_time_conflicts(owner: Owner, for_date: date) list~str~
         +explain_plan(plan: list~Task~) str
     }
 
     Owner "1" --> "0..*" Pet : owns
-    Pet "1" --> "0..*" Task : has
+    Pet "1" --> "0..*" Task : has, completes via mark_task_complete
     Task ..> Pet : pet_id back-reference
+    Task ..> Task : build_next_occurrence spawns next recurring instance
     Scheduler ..> Owner : reads preferences + tasks across pets
-    Scheduler --> Task : selects/orders
+    Scheduler --> Task : sorts/filters/selects, flags conflicts

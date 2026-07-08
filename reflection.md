@@ -68,13 +68,15 @@ This tradeoff is reasonable here because for a pet owner, which tasks get done (
 **a. How you used AI**
 
 - How did you use AI tools during this project (for example: design brainstorming, debugging, refactoring)?
+    design brainstorming, debugging and refactoring
 - What kinds of prompts or questions were most helpful?
-
+    splitting into different sections for different goals
 **b. Judgment and verification**
 
 - Describe one moment where you did not accept an AI suggestion as-is.
+    there were a couple suggested fix that I did not take
 - How did you evaluate or verify what the AI suggested?
-
+    based on whether it's necessary to fix
 ---
 
 ## 4. Testing and Verification
@@ -82,13 +84,16 @@ This tradeoff is reasonable here because for a pet owner, which tasks get done (
 **a. What you tested**
 
 - What behaviors did you test?
+    basic pet mechanisms, recurrence logic, sorting correctness, conflict detection
 - Why were these tests important?
+    Recurrence is the riskiest logic in this codebase; Sorting correctness is the contract the whole scheduler promises the user; Conflict detection has two failure modes that are each independently testable
 
 **b. Confidence**
 
 - How confident are you that your scheduler works correctly?
+    4 stars
 - What edge cases would you test next if you had more time?
-
+    greater number of edge cases
 ---
 
 ## 5. Reflection
@@ -96,11 +101,13 @@ This tradeoff is reasonable here because for a pet owner, which tasks get done (
 **a. What went well**
 
 - What part of this project are you most satisfied with?
+    going over such a full project
 
 **b. What you would improve**
 
 - If you had another iteration, what would you improve or redesign?
-
+    more time to think about design and skeleton
 **c. Key takeaway**
 
 - What is one important thing you learned about designing systems or working with AI on this project?
+    AI as a tool need good design to lead

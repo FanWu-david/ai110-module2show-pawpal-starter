@@ -58,7 +58,7 @@ Today's plan:
 
 ```bash
 # Run the full test suite:
-pytest
+python -m pytest
 
 # Run with coverage:
 pytest --cov
@@ -69,6 +69,25 @@ Sample test output:
 ```
 # Paste your pytest output here
 ```
+collected 11 items                                                                                                                       
+tests/test_pawpal.py ...........                                                                                                   [100%]
+
+=========================================================== 11 passed in 0.03s ===========================================================
+
+4 stars readability
+
+
+## ✨ Features
+
+- **Priority-based sorting** — orders tasks high → medium → low, breaking ties by earliest preferred time
+- **Time-based sorting** — orders tasks earliest-to-latest by preferred time, with no-time tasks last
+- **Time-budget filtering** — greedily fits as many tasks as possible into the owner's available minutes for the day
+- **Task filtering** — filters tasks across all pets by completion status and/or pet name
+- **Conflict warnings** — flags tasks (same pet or different pets) scheduled at the same preferred time, without altering the plan
+- **Conflict resolution** — when building the final plan, drops lower-priority tasks that collide with an already-claimed time slot
+- **Daily & weekly recurrence** — completion-triggered recurring tasks automatically generate their next due occurrence
+- **Overdue/missed-task tracking** — due and overdue tasks keep appearing in the plan until completed, instead of silently disappearing
+- **Plan explanation** — renders the generated plan as a human-readable, time-ordered summary
 
 ## 📐 Smarter Scheduling
 
@@ -81,12 +100,45 @@ Sample test output:
 
 ## 📸 Demo Walkthrough
 
-Describe your app in numbered steps so a reader can follow along without watching a video:
+### UI features
 
-1. <!-- Describe this step -->
-2. <!-- Describe this step -->
-3. <!-- Describe this step -->
-4. <!-- Describe this step -->
-5. <!-- Add more steps as needed -->
+The Streamlit app (`app.py`) is organized into four sections, each backed by the `pawpal_system` classes:
+
+- **Owner** — enter the owner's name, which creates an `Owner` for the session.
+- **Add a Pet** — enter a name, species, and breed, then click **Add pet** to attach a `Pet` to the owner. Added pets appear in a live table.
+- **Add a Task** — pick a pet, then set a title, duration, priority, category, and preferred time, and click **Add task** to attach a `Task` to that pet. The current task table updates immediately, with:
+  - A **conflict banner** (✅ success or ⚠️ warning per clashing time slot) from `Scheduler.detect_time_conflicts()`
+  - A **sort toggle** (Priority / Time) that re-orders the table live via `Scheduler.sort_by_priority()` or `Scheduler.sort_by_time()`
+- **Build Schedule** — enter the owner's available minutes for the day and click **Generate schedule** to run `Scheduler.generate_daily_plan()`. This re-checks for conflicts, then shows the resulting plan as a table with a success/info banner.
+
+### Example workflow
+
+1. Enter an owner name (e.g., "Jordan").
+2. Add a pet (e.g., "Mochi", dog).
+3. Add a task for that pet (e.g., "Morning walk", 30 min, high priority, 8:00 AM).
+4. Add a second pet ("Rex") and a task that collides on time (e.g., "Litter box cleaning" also at 8:00 AM) — the task table immediately shows a ⚠️ conflict warning naming both pets and tasks.
+5. Enter the available time for the day and click **Generate schedule** — the app re-checks conflicts, then displays the ordered plan that fits the time budget.
+
+### Key Scheduler behaviors shown
+
+- **Priority + time sorting** — high-priority tasks are placed first; ties are broken by earliest preferred time.
+- **Time-budget filtering** — only as many tasks as fit the available minutes are kept, favoring earlier/higher-priority ones.
+- **Conflict warnings** — tasks sharing a preferred time (even across different pets) are flagged with a human-readable warning instead of failing silently.
+- **Conflict resolution** — when building the final plan, only the first task to claim a time slot survives; later colliding tasks are dropped.
+
+### Sample CLI output
+
+Running `python main.py` seeds an owner with two pets and a deliberate time collision, then prints the conflict warning followed by the generated plan:
+
+```
+Scheduling Conflicts
+  Warning: conflict at 08:00 — Mochi's Morning walk, Rex's Litter box cleaning are all scheduled at the same time.
+
+Today's Schedule
+Today's plan:
+  08:00 — Morning walk (30 min) [priority: high]
+  09:00 — Feeding (10 min) [priority: high]
+  18:00 — Brushing (15 min) [priority: low]
+```
 
 **Screenshot or video** *(optional)*: <!-- Insert a screenshot or link to a demo video here -->
