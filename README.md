@@ -47,11 +47,11 @@ pip install -r requirements.txt
 Paste a sample of your app's CLI or Streamlit output here so a reader can see what a generated plan looks like:
 
 ```
-# e.g.:
-# Daily plan for Biscuit (Golden Retriever):
-#   08:00 — Morning walk (30 min) [priority: high]
-#   09:00 — Feeding (10 min) [priority: high]
-#   ...
+Today's Schedule
+Today's plan:
+  08:00 — Morning walk (30 min) [priority: high]
+  09:00 — Feeding (10 min) [priority: high]
+  18:00 — Brushing (15 min) [priority: low]
 ```
 
 ## 🧪 Testing PawPal+
@@ -72,14 +72,12 @@ Sample test output:
 
 ## 📐 Smarter Scheduling
 
-> Fill in once you've implemented scheduling logic.
-
 | Feature | Method(s) | Notes |
 |---------|-----------|-------|
-| Task sorting | | e.g., by priority, duration |
-| Filtering | | e.g., skip tasks if time runs out |
-| Conflict handling | | e.g., overlapping time slots |
-| Recurring tasks | | e.g., daily vs. weekly |
+| Task sorting | `Scheduler.sort_by_priority()`, `Scheduler.sort_by_time()` | Single composite-key sort (`priority_rank`, `preferred_time`) so "high" always comes before "medium"/"low"; same-priority tasks are then ordered earliest-time-first, with no-time tasks last. |
+| Filtering | `Owner.filter_tasks()`, `Scheduler.filter_by_time()` | `Owner.filter_tasks()` filters across all pets by completion status and/or pet name (either or both, combined with AND). `Scheduler.filter_by_time()` greedily keeps only the tasks (in priority order) that still fit the owner's available time budget. |
+| Conflict handling | `Scheduler.detect_time_conflicts()`, `Scheduler.resolve_conflicts()` | `detect_time_conflicts()` is a lightweight, non-destructive check: it groups tasks by exact `preferred_time` and returns human-readable warning strings for any slot shared by two or more tasks (same pet or different pets) — it never raises or drops anything. `resolve_conflicts()` is what actually shapes the final plan: once a time slot is claimed by a higher-priority task, later tasks requesting that same time are dropped. |
+| Recurring tasks | `Task.build_next_occurrence()`, `Pet.mark_task_complete()`, `Task.is_due()` | Recurrence is completion-triggered, not calendar-driven: `Pet.mark_task_complete()` marks a task done and, if it's recurring, marks that instance `superseded` and appends a new `Task` from `Task.build_next_occurrence()`, whose `due_date` is computed with `timedelta` (`+1 day` for `"daily"`, `+7 days` for `"weekly"`). `Task.is_due()` then ensures only that one live instance of a recurring series appears in the plan at a time, while a missed (never-completed) occurrence keeps showing up as overdue instead of silently disappearing. |
 
 ## 📸 Demo Walkthrough
 

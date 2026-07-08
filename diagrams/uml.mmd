@@ -14,6 +14,7 @@ classDiagram
         +add_pet(pet: Pet) void
         +remove_pet(pet_id: str) void
         +get_pets() list~Pet~
+        +get_all_tasks() list~Task~
     }
 
     class Pet {
@@ -33,6 +34,7 @@ classDiagram
 
     class Task {
         -task_id: str
+        -pet_id: str
         -title: str
         -category: str
         -duration_minutes: int
@@ -40,17 +42,19 @@ classDiagram
         -preferred_time: time
         -is_recurring: bool
         -recurrence_pattern: str
-        -completed: bool
+        -completed_dates: set~date~
         +get_details() dict
         +update_details(updates: dict) void
-        +mark_complete() void
+        +mark_complete(for_date: date) void
+        +is_complete(for_date: date) bool
         +is_overdue() bool
     }
 
     class Scheduler {
         -available_time_minutes: int
         -constraints: dict
-        +generate_daily_plan(pet: Pet, owner: Owner) list~Task~
+        +resolve_constraints(owner: Owner) dict
+        +generate_daily_plan(owner: Owner, for_date: date) list~Task~
         +sort_by_priority(tasks: list~Task~) list~Task~
         +filter_by_time(tasks: list~Task~, available_time: int) list~Task~
         +resolve_conflicts(tasks: list~Task~) list~Task~
@@ -59,6 +63,6 @@ classDiagram
 
     Owner "1" --> "0..*" Pet : owns
     Pet "1" --> "0..*" Task : has
-    Scheduler ..> Owner : reads preferences
-    Scheduler ..> Pet : reads daily_tasks
+    Task ..> Pet : pet_id back-reference
+    Scheduler ..> Owner : reads preferences + tasks across pets
     Scheduler --> Task : selects/orders
